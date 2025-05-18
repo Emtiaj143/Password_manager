@@ -1,5 +1,5 @@
 <?php
-// classes/User.php
+// Classes/User.php
 
 class User {
     private $db;
@@ -25,6 +25,37 @@ class User {
         $stmt->bindParam(':encryption_key', $this->encryption_key);
 
         return $stmt->execute();
+    }
+
+    public function login($username, $password) {
+        // Fetch user by username
+        $query = "SELECT * FROM users WHERE username = :username";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':username', $username);
+        $stmt->execute();
+
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // Verify password
+        if ($user && password_verify($password, $user['password_hash'])) {
+            // Store user data in session
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['encryption_key'] = $user['encryption_key'];
+            return true;
+        }
+
+        return false;
+    }
+
+    public function logout() {
+        session_start();
+        session_unset();
+        session_destroy();
+    }
+
+    public function isLoggedIn() {
+        return isset($_SESSION['user_id']);
     }
 }
 ?>

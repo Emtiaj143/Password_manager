@@ -1,20 +1,23 @@
 <?php
-// signup.php
-require_once 'db/database.php';
-require_once 'classes/User.php';
+require_once __DIR__ . '/DB/database.php';
+require_once __DIR__ . '/Classes/User.php';
+
+session_start();
 
 $db = (new Database())->getConnection();
 $user = new User($db);
+
+$error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    if ($user->register($username, $password)) {
-        header("Location: login.php");
+    if ($user->login($username, $password)) {
+        header("Location: dashboard.php");
         exit();
     } else {
-        echo "Error: Could not register user.";
+        $error = "Invalid username or password.";
     }
 }
 ?>
@@ -22,10 +25,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Signup</title>
+    <title>Login</title>
 </head>
 <body>
-    <h2>Signup</h2>
+    <h2>Login</h2>
+
+    <?php if ($error): ?>
+        <p style="color: red;"><?php echo $error; ?></p>
+    <?php endif; ?>
+
     <form method="POST" action="">
         <label>Username:</label><br>
         <input type="text" name="username" required><br><br>
@@ -33,9 +41,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <label>Password:</label><br>
         <input type="password" name="password" required><br><br>
         
-        <button type="submit">Register</button>
+        <button type="submit">Login</button>
     </form>
+    <br>
+    <a href="signup.php">Don't have an account? Sign up here</a>
 </body>
 </html>
-  <br>
-    <a href="login.php">Already have an account? Login here</a>
