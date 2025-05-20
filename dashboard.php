@@ -1,3 +1,4 @@
+<?php include 'Views/header.php'; ?>
 <?php
 require_once __DIR__ . '/DB/database.php';
 require_once __DIR__ . '/Classes/User.php';
@@ -64,3 +65,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <a href="logout.php">Logout</a>
 </body>
 </html>
+<?php include 'Views/footer.php'; ?>

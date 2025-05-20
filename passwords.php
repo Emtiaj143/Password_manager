@@ -1,3 +1,4 @@
+<?php include 'Views/header.php'; ?>
 <?php
 require_once __DIR__ . '/DB/database.php';
 require_once __DIR__ . '/Classes/PasswordManager.php';
@@ -10,35 +11,71 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+// Initialize database and manager
 $db = (new Database())->getConnection();
 $manager = new PasswordManager($db);
 
+// Handle form submission
+$message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $service = $_POST['service'];
-    $password = $_POST['password'];
-    $manager->savePassword($service, $password);
-    echo "Password saved successfully!";
+    $service = trim($_POST['service']);
+    $password = trim($_POST['password']);
+
+    if ($service !== '' && $password !== '') {
+        $success = $manager->savePassword($service, $password);
+        $message = $success ? "✅ Password saved successfully!" : "❌ Failed to save password.";
+    } else {
+        $message = "❗ All fields are required.";
+    }
 }
+
+// Fetch stored passwords
+$passwords = $manager->getPasswords();
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Stored Passwords</title>
-</head>
-<body>
-    <h2>Save a New Password</h2>
-    <form method="POST">
-        <label>Service:</label><br>
-        <input type="text" name="service" required><br><br>
+<?php include 'Views/header.php'; ?>
 
-        <label>Password:</label><br>
-        <input type="text" name="password" required><br><br>
+<h2>Store a New Password</h2>
 
-        <button type="submit">Save Password</button>
-    </form>
+<?php if (!empty($message)): ?>
+    <p style="color: <?= strpos($message, '✅') !== false ? 'green' : 'red' ?>;">
+        <?= $message ?>
+    </p>
+<?php endif; ?>
 
-    <br><br>
-    <a href="dashboard.php">Back to Dashboard</a>
-</body>
-</html>
+<form method="POST">
+    <label>Service Name:</label><br>
+    <input type="text" name="service" required><br><br>
+
+    <label>Password:</label><br>
+    <input type="text" name="password" required><br><br>
+
+    <button type="submit">💾 Save Password</button>
+</form>
+
+<hr>
+
+<h2>Your Saved Passwords</h2>
+<?php if (count($passwords) === 0): ?>
+    <p>No passwords saved yet.</p>
+<?php else: ?>
+    <table>
+        <tr>
+            <th>Service</th>
+            <th>Password</th>
+            <th>Saved At</th>
+        </tr>
+        <?php foreach ($passwords as $entry): ?>
+            <tr>
+                <td><?= htmlspecialchars($entry['service']) ?></td>
+                <td><?= htmlspecialchars($entry['decrypted_password']) ?></td>
+                <td><?= $entry['created_at'] ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+<?php endif; ?>
+
+<br>
+<a href="dashboard.php">⬅ Back to Dashboard</a>
+
+<?php include 'Views/footer.php'; ?>

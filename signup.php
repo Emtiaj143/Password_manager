@@ -1,3 +1,4 @@
+<?php include 'Views/header.php'; ?>
 <?php
 // signup.php
 require_once 'db/database.php';
@@ -39,3 +40,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </html>
   <br>
     <a href="login.php">Already have an account? Login here</a>
+    <?php include 'Views/footer.php'; ?>
